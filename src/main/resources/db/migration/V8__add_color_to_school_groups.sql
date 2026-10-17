@@ -1,0 +1,3 @@
+
+ALTER TABLE school_groups
+    ADD COLUMN color VARCHAR(7) NOT NULL DEFAULT '#2563EB';

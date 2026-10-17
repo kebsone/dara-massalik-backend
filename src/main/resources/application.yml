@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: dara-massalik-backend
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/dara_massalik}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: ${SERVER_PORT:8080}
+
+app:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:change-this-development-secret-key-at-least-32-chars}
+      expiration-minutes: ${JWT_EXPIRATION_MINUTES:15}
+    refresh-token:
+      expiration-days: ${REFRESH_TOKEN_EXPIRATION_DAYS:30}
+  auth:
+    otp:
+      expiration-seconds: ${OTP_EXPIRATION_SECONDS:300}
+      expose-dev-code: ${OTP_EXPOSE_DEV_CODE:false}
+  sms:
+    provider: ${SMS_PROVIDER:logging}
+    brevo:
+      api-key: ${BREVO_API_KEY:}
+      sender: ${BREVO_SMS_SENDER:ToubaTLS}
+
+springdoc:
+  default-produces-media-type: application/json
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    org.flywaydb: INFO
