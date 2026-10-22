@@ -10,7 +10,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/students")
 @Tag(name = "Students")
@@ -44,4 +46,33 @@ public class StudentController {
     @Operation(operationId = "deactivateStudent", summary = "Deactivate a student")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deactivate(@PathVariable Long id) { studentService.deactivate(id); }
+
+
+    @PostMapping(
+            value = "/{id}/photo",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    @Operation(operationId = "uploadStudentPhoto", summary = "Upload or replace a student photo")
+    public StudentResponse uploadPhoto(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) {
+        return studentService.uploadPhoto(id, file);
+    }
+
+    @GetMapping(
+            value = "/{id}/photo",
+            produces = MediaType.ALL_VALUE
+    )
+    @Operation(operationId = "getStudentPhoto", summary = "Get a student photo")
+    public ResponseEntity<org.springframework.core.io.Resource> getPhoto(
+            @PathVariable Long id) {
+        return studentService.getPhoto(id);
+    }
+
+    @DeleteMapping("/{id}/photo")
+    @Operation(operationId = "deleteStudentPhoto", summary = "Delete a student photo")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePhoto(@PathVariable Long id) {
+        studentService.deletePhoto(id);
+    }
 }

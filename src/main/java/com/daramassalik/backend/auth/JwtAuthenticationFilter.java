@@ -1,6 +1,7 @@
 package com.daramassalik.backend.auth;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +15,7 @@ import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -22,7 +24,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final AppUserRepository userRepository;
     private final PermissionService permissionService;
 
-    public JwtAuthenticationFilter(JwtService jwtService, AppUserRepository userRepository, PermissionService permissionService) {
+    public JwtAuthenticationFilter(
+            JwtService jwtService,
+            AppUserRepository userRepository,
+            PermissionService permissionService
+    ) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.permissionService = permissionService;
@@ -34,30 +40,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
         String header = request.getHeader("Authorization");
+
         if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
             try {
                 Claims claims = jwtService.parse(header.substring(7));
                 Long userId = Long.valueOf(claims.getSubject());
-                userRepository.findById(userId).filter(AppUser::isActive).ifPresent(user -> {
-                    List<SimpleGrantedAuthority> authorities = new java.util.ArrayList<>(user.getRoles().stream()
-                            .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
-                            .toList());
-                    permissionService.getEffectivePermissions(user).stream()
-                            .map(permission -> new SimpleGrantedAuthority("PERM_" + permission.name()))
-                            .forEach(authorities::add);
 
-                    var authentication = new UsernamePasswordAuthenticationToken(
-                            String.valueOf(user.getId()), null, authorities
-                    );
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                });
-            } catch (Exception ignored) {
+                userRepository.findById(userId)
+                        .filter(AppUser::isActive)
+                        .ifPresent(user -> {
+                            List<SimpleGrantedAuthority> authorities = new ArrayList<>(
+                                    user.getRoles().stream()
+                                            .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                                            .toList()
+                            );
+
+                            permissionService.getEffectivePermissions(user).stream()
+                                    .map(permission -> new SimpleGrantedAuthority("PERM_" + permission.name()))
+                                    .forEach(authorities::add);
+
+                            var authentication = new UsernamePasswordAuthenticationToken(
+                                    String.valueOf(user.getId()), null, authorities
+                            );
+                            SecurityContextHolder.getContext().setAuthentication(authentication);
+                        });
+            } catch (JwtException | IllegalArgumentException invalidToken) {
+                // Laisser Spring Security traiter la requête comme anonyme.
+                // L'AuthenticationEntryPoint configuré renverra 401 sur une route protégée.
                 SecurityContextHolder.clearContext();
             }
         }
+
+        // Important : ne pas interrompre ici, afin que /api/auth/refresh reste accessible
+        // même si la requête porte aussi un access token expiré.
         filterChain.doFilter(request, response);
     }
 }

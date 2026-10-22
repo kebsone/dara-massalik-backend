@@ -1,9 +1,11 @@
 package com.daramassalik.backend.student;
 
+import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDate;
 
 public record StudentResponse(
-        Long id,
+        @NotNull Long id,
         String firstName,
         String lastName,
         LocalDate birthDate,
@@ -13,5 +15,6 @@ public record StudentResponse(
         boolean active,
         Long groupId,
         String groupName,
-        String groupColor
+        String groupColor,
+        String photoUrl
 ) {}

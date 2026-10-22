@@ -25,21 +25,17 @@ app:
   security:
     jwt:
       secret: ${JWT_SECRET:change-this-development-secret-key-at-least-32-chars}
-      expiration-minutes: ${JWT_EXPIRATION_MINUTES:15}
+      # 360 minutes = 6 hours
+      expiration-minutes: ${JWT_EXPIRATION_MINUTES:2}
     refresh-token:
-      expiration-days: ${REFRESH_TOKEN_EXPIRATION_DAYS:30}
+      # 7 days
+      expiration-days: ${REFRESH_TOKEN_EXPIRATION_DAYS:7}
   auth:
     otp:
       expiration-seconds: ${OTP_EXPIRATION_SECONDS:300}
-      expose-dev-code: ${OTP_EXPOSE_DEV_CODE:false}
-  sms:
-    provider: ${SMS_PROVIDER:logging}
-    brevo:
-      api-key: ${BREVO_API_KEY:}
-      sender: ${BREVO_SMS_SENDER:ToubaTLS}
+      expose-dev-code: ${OTP_EXPOSE_DEV_CODE:true}
 
 springdoc:
-  default-produces-media-type: application/json
   swagger-ui:
     path: /swagger-ui.html
   api-docs:
