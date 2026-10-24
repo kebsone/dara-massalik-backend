@@ -25,14 +25,15 @@ app:
   security:
     jwt:
       secret: ${JWT_SECRET:change-this-development-secret-key-at-least-32-chars}
-      # 360 minutes = 6 hours
-      expiration-minutes: ${JWT_EXPIRATION_MINUTES:2}
+      # Local default; production overrides this in application-prod.yml.
+      expiration-minutes: ${JWT_EXPIRATION_MINUTES:15}
     refresh-token:
       # 7 days
       expiration-days: ${REFRESH_TOKEN_EXPIRATION_DAYS:7}
   auth:
     otp:
       expiration-seconds: ${OTP_EXPIRATION_SECONDS:300}
+      # Development convenience only; production profile explicitly disables this.
       expose-dev-code: ${OTP_EXPOSE_DEV_CODE:true}
 
 springdoc:

@@ -10,7 +10,7 @@ public record LoginRequest(
         @Email
         String email,
 
-        @Schema(description = "User password", example = "ChangeMe123!")
+        @Schema(description = "User password", example = "VotreMotDePasse")
         @NotBlank
         String password
 ) {
